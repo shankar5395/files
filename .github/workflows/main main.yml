@@ -1,0 +1,34 @@
+name: Restart SSH on Remote Server and List Active and Inactive Services
+
+on:
+  push:
+    branches:
+      - main  # Change this to your default branch if needed
+
+jobs:
+  restart-ssh:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Restart SSH service and show active & inactive services on remote server
+        run: |
+          ssh -v -o StrictHostKeyChecking=no ubuntu@13.233.96.163 << 'EOF'
+          echo "Restarting SSH service..."
+          sudo systemctl restart ssh
+          echo "SSH service restarted. Current SSH status:"
+          sudo systemctl status ssh
+          
+          echo "Listing all active services:"
+          sudo systemctl list-units --type=service --state=active
+          
+          echo "Listing all inactive services:"
+          sudo systemctl list-units --type=service --state=inactive
+          EOF
